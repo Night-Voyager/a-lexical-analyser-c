@@ -11,12 +11,10 @@ static char keywords[][11] = {
 int isKeyword(char *);
 
 int main() {
-    FILE * file;
-    file = fopen("../main.c", "r");
-    char c = getc(file);
-    while (c != EOF) {
+    FILE * file = fopen("../main.c", "r");
+    char c;
+    while ( (c = getc(file)) != EOF ) {
         putchar(c);
-        c = getc(file);
     }
     fclose(file);
     return 0;
