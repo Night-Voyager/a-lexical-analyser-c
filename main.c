@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 static char keywords[][11] = {
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double", "else", "enum", "extern", "float",
@@ -11,11 +12,29 @@ static char keywords[][11] = {
 int isKeyword(char *);
 
 int main() {
+    char token[32] = {'\0'};
+    int token_length = 0;
+
     FILE * file = fopen("../main.c", "r");
     char c;
+
     while ( (c = getc(file)) != EOF ) {
-        putchar(c);
+        if (isspace(c) == 0 && token_length < 32) {
+            token[token_length] = c;
+            token_length++;
+        } else {
+            token[token_length] = '\0';
+
+            if (token[0] == '\0') continue;
+
+            if (isKeyword(token) == 0)
+                printf("keyword: %s\n", token);
+            else
+                printf("token: %s\n", token);
+            token_length = 0;
+        }
     }
+
     fclose(file);
     return 0;
 }
