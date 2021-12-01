@@ -11,7 +11,14 @@ static char keywords[][11] = {
 int isKeyword(char *);
 
 int main() {
-    printf("%d\n", isKeyword("char"));
+    FILE * file;
+    file = fopen("../main.c", "r");
+    char c = getc(file);
+    while (c != EOF) {
+        putchar(c);
+        c = getc(file);
+    }
+    fclose(file);
     return 0;
 }
 
