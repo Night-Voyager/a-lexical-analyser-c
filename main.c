@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 static char keywords[][11] = {
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double", "else", "enum", "extern", "float",
@@ -10,6 +11,7 @@ static char keywords[][11] = {
 };
 
 int isKeyword(char *);
+void handleComments(FILE *);
 
 int main() {
     char token[32] = {'\0'};
@@ -20,6 +22,13 @@ int main() {
 
     while ( (c = getc(file)) != EOF ) {
         if (isspace(c) == 0 && token_length < 32) {
+
+            // handle comments
+            if (c == '/' && token_length == 0) {
+                handleComments(file);
+                continue;
+            }
+
             token[token_length] = c;
             token_length++;
         } else {
@@ -45,4 +54,19 @@ int isKeyword(char * s) {
         if (strcmp(s, keywords[i]) == 0) break;
     }
     return strcmp(s, keywords[i]);
+}
+
+void handleComments(FILE * file) {
+    char c = getc(file);
+    switch (c) {
+        case '/':
+            while ( (c = getc(file)) != '\n' );
+            break;
+        case '*':
+            while ( (c = getc(file)) != '*' || (c = getc(file)) != '/' );
+            break;
+        default:
+            printf("Error: invalid token");
+            exit(0);
+    }
 }
