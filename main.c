@@ -117,7 +117,7 @@ void handleConstants(FILE * file, char c) {
             token[token_length++] = '\0';
             token_length = 0;
 
-            printf("char: %s\n", token);
+            printf("<char, %s>\n", token);
 
             break;
         case '\"':
@@ -137,7 +137,7 @@ void handleConstants(FILE * file, char c) {
             token[token_length] = '\0';
             token_length = 0;
 
-            printf("string: %s\n", token);
+            printf("<string, %s>\n", token);
 
             break;
         default:
@@ -160,7 +160,7 @@ void handleConstants(FILE * file, char c) {
             token_length = 0;
             fseek(file, -1, SEEK_CUR);
 
-            printf("num: %s\n", token);
+            printf("<num, %s>\n", token);
     }
 }
 
@@ -178,10 +178,10 @@ void handlePunctuations(FILE * file, char c){
                 }
             }
         }
-        printf("op: %c\n", c);
+        printf("<op, %c>\n", c);
     }
     else
-        printf("special symbol: %c\n", c);
+        printf("<special symbol, %c>\n", c);
 
     token_length = 0;
 }
@@ -196,10 +196,10 @@ void handleKeywordsAndIdentifiers(FILE * file, char c) {
     fseek(file, -1, SEEK_CUR);
     if (isKeyword(token)) {
         if (strcmp(token, "sizeof") == 0)
-            printf("op: sizeof\n");
+            printf("<op, sizeof>\n");
         else
-            printf("keyword: %s\n", token);
+            printf("<keyword, %s>\n", token);
     }
     else
-        printf("id: %s\n", token);
+        printf("<id, %s>\n", token);
 }
