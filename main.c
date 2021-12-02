@@ -24,23 +24,33 @@ int isOperator(char);
 void handleComments(FILE *);
 void handlePunctuations(FILE *, char);
 void handleConstants(FILE *, char);
+void handleKeywordsAndIdentifiers(FILE *, char);
 
 int main() {
     FILE * file = fopen("../main.c", "r");
     char c;
 
     while ( (c = getc(file)) != EOF ) {
-        if (isspace(c) == 0 && token_length < 32) {
-
+        if (!isspace(c)) {
             // handle comments
             if (c == '/' && token_length == 0) {
                 handleComments(file);
                 continue;
             }
 
+            // initialize token buffer
+            token[0] = '\0';
+            token_length = 0;
+
             // handle constants
             if ( (isdigit(c) || c == '\'' || c == '\"') && token_length == 0 ) {
                 handleConstants(file, c);
+                continue;
+            }
+
+            // handle keywords and identifiers
+            if (isalpha(c) || c == '_') {
+                handleKeywordsAndIdentifiers(file, c);
                 continue;
             }
 
@@ -49,23 +59,6 @@ int main() {
                 handlePunctuations(file, c);
                 continue;
             }
-
-            token[token_length] = c;
-            token_length++;
-        } else {
-            token[token_length] = '\0';
-
-            if (token[0] == '\0') continue;
-
-            if (isKeyword(token) == 0) {
-                if (strcmp(token, "sizeof") == 0)
-                    printf("keyword: op: sizeof\n");
-                else
-                    printf("keyword: %s\n", token);
-
-            } else
-                printf("token: %s\n", token);
-            token_length = 0;
         }
     }
 
@@ -74,11 +67,10 @@ int main() {
 }
 
 int isKeyword(char * s) {
-    int i;
-    for (i = 0; i < 37; ++i) {
-        if (strcmp(s, keywords[i]) == 0) break;
+    for (int i = 0; i < 37; ++i) {
+        if (strcmp(s, keywords[i]) == 0) return 1;
     }
-    return strcmp(s, keywords[i]);
+    return 0;
 }
 
 int isOperator(char c) {
@@ -166,6 +158,7 @@ void handleConstants(FILE * file, char c) {
 
             token[token_length] = '\0';
             token_length = 0;
+            fseek(file, -1, SEEK_CUR);
 
             printf("num: %s\n", token);
     }
@@ -191,4 +184,22 @@ void handlePunctuations(FILE * file, char c){
         printf("special symbol: %c\n", c);
 
     token_length = 0;
+}
+
+void handleKeywordsAndIdentifiers(FILE * file, char c) {
+    while ( (isalnum(c) || c == '_') && token_length < IDENTIFIER_MAX_LEN ) {
+        token[token_length++] = c;
+        c = getc(file);
+    }
+    token[token_length] = '\0';
+    token_length = 0;
+    fseek(file, -1, SEEK_CUR);
+    if (isKeyword(token)) {
+        if (strcmp(token, "sizeof") == 0)
+            printf("op: sizeof\n");
+        else
+            printf("keyword: %s\n", token);
+    }
+    else
+        printf("id: %s\n", token);
 }
