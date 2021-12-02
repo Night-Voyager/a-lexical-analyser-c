@@ -12,11 +12,17 @@ static char keywords[][11] = {
     "_Bool", "_Complex", "_Imaginary", "inline", "restrict"  // 5 new keywords for C99
 };
 
+static char operators[] = {
+    '+', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '=', '^', '~'//, ',', '?'
+};
+
 char token[100] = {'\0'};
 int token_length = 0;
 
 int isKeyword(char *);
+int isOperator(char);
 void handleComments(FILE *);
+void handlePunctuations(FILE *, char);
 void handleConstants(FILE *, char);
 
 int main() {
@@ -38,6 +44,12 @@ int main() {
                 continue;
             }
 
+            // handle punctuations
+            if (ispunct(c)) {
+                handlePunctuations(file, c);
+                continue;
+            }
+
             token[token_length] = c;
             token_length++;
         } else {
@@ -45,9 +57,13 @@ int main() {
 
             if (token[0] == '\0') continue;
 
-            if (isKeyword(token) == 0)
-                printf("keyword: %s\n", token);
-            else
+            if (isKeyword(token) == 0) {
+                if (strcmp(token, "sizeof") == 0)
+                    printf("keyword: op: sizeof\n");
+                else
+                    printf("keyword: %s\n", token);
+
+            } else
                 printf("token: %s\n", token);
             token_length = 0;
         }
@@ -63,6 +79,13 @@ int isKeyword(char * s) {
         if (strcmp(s, keywords[i]) == 0) break;
     }
     return strcmp(s, keywords[i]);
+}
+
+int isOperator(char c) {
+    for (int i = 0; i < 16; ++i) {
+        if (c == operators[i]) return 1;
+    }
+    return 0;
 }
 
 void handleComments(FILE * file) {
@@ -146,4 +169,26 @@ void handleConstants(FILE * file, char c) {
 
             printf("num: %s\n", token);
     }
+}
+
+void handlePunctuations(FILE * file, char c){
+    if (isOperator(c)) {
+        switch (c) {
+            case '+':
+            case '-':
+            {
+                char c_next = getc(file);
+                if (isdigit(c_next)) {
+                    token[token_length++] = c;
+                    handleConstants(file, c_next);
+                    return;
+                }
+            }
+        }
+        printf("op: %c\n", c);
+    }
+    else
+        printf("special symbol: %c\n", c);
+
+    token_length = 0;
 }
