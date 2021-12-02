@@ -90,7 +90,7 @@ void handleComments(FILE * file) {
             while ( (c = getc(file)) != '*' || (c = getc(file)) != '/' );
             break;
         default:
-            printf("Error: invalid token");
+            printf("error: expected expression before '/' token");
             exit(0);
     }
 }
