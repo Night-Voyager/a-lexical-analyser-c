@@ -189,7 +189,8 @@ void handlePunctuations(FILE * file, char c){
                     token[token_length++] = c;
                     handleConstants(file, c_next);
                     return;
-                }
+                } else
+                    fseek(file, -1, SEEK_CUR);  // reset the cursor for reading one more character
             }
             default:
                 printf("<op, %c>\n", c);

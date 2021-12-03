@@ -32,6 +32,9 @@ void handleConstants(FILE *, char);
 void handleKeywordsAndIdentifiers(FILE *, char);
 
 int main() {
+    int x = 0;
+    x+=1;
+
     FILE * file = fopen("../test.c", "r");
     char c;
 
