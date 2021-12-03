@@ -1,4 +1,4 @@
-#include <stdio.h>
+#i <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -13,7 +13,7 @@ static char keywords[][11] = {
 };
 
 static char operators[] = {
-    '+', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '=', '^', '~'/, ',', '?'
+    '+ ', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '=', '^', '~'/, ',', '?'
 };
 
 static char preprocessorDirectives[][9] = {

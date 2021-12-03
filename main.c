@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <stdarg.h>
 
 #define IDENTIFIER_MAX_LEN 32
 
@@ -29,6 +31,7 @@ void handleComments(FILE *, char);
 void handlePunctuations(FILE *, char);
 void handleConstants(FILE *, char);
 void handleKeywordsAndIdentifiers(FILE *, char);
+void printErrorOrWarning(int, char *, ...);
 
 int main() {
     FILE * file = fopen("../test.c", "r");
@@ -111,13 +114,13 @@ void handleConstants(FILE * file, char c) {
 
             // check for the terminating ' character
             if (c != '\'') {
-                printf("error: missing terminating ' character\n");
+                printErrorOrWarning(1, "error: missing terminating ' character\n");
                 return;
             }
 
             // check for the length of the token
             if ( (token[1] == '\\' && token_length > 4) || (token[1] != '\\' && token_length > 3) ) {
-                printf("warning: multi-character character constant\n");
+                printErrorOrWarning(0, "warning: multi-character character constant\n");
                 return;
             }
 
@@ -137,7 +140,7 @@ void handleConstants(FILE * file, char c) {
             token_length = 0;
 
             if (c == '\r' || c == '\n') {
-                printf("error: missing terminating \" character\n");
+                printErrorOrWarning(1, "error: missing terminating \" character\n");
                 return;
             }
 
@@ -212,7 +215,7 @@ void handlePunctuations(FILE * file, char c){
                 if (isPreprocessorDirective(token))
                     printf("<preprocessor directive, %s>\n", token);
                 else
-                    printf("error: invalid preprocessing directive %s\n", token);
+                    printErrorOrWarning(1, "error: invalid preprocessing directive %s\n", token);
 
                 break;
             default:
@@ -239,4 +242,24 @@ void handleKeywordsAndIdentifiers(FILE * file, char c) {
     }
     else
         printf("<id, %s>\n", token);
+}
+
+void printErrorOrWarning(int type, char * message, ...) {
+    switch (type) {
+        case 0:  // yellow for warning
+            system("color 6");
+            break;
+        case 1:  // red for error
+            system("color 4");
+            break;
+        default:
+            return;
+    }
+
+    va_list vaList;
+    va_start(vaList, message);
+    vprintf(message, vaList);
+    va_end(vaList);
+
+    system("color 7");  // resume the color
 }
