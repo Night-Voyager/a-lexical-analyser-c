@@ -33,8 +33,16 @@ void handleConstants(FILE *, char);
 void handleKeywordsAndIdentifiers(FILE *, char);
 void printErrorOrWarning(int, char *, ...);
 
-int main() {
-    FILE * file = fopen("../test.c", "r");
+int main(int argc, char * argv[]) {
+    FILE * file;
+    if (argc == 1)
+        file = fopen("../test.c", "r");
+    else
+        file = fopen(argv[1], "r");
+
+    if (file == NULL)
+        printErrorOrWarning(1, "file \"%s\" is not found", argv[1]);
+
     char c;
 
     while ( (c = getc(file)) != EOF ) {
