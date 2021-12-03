@@ -13,7 +13,8 @@ static char keywords[][11] = {
 };
 
 static char operators[] = {
-    '+', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '=', '^', '~'//, ',', '?'
+    '+', '-', '*', '/', '%', '<,
+    >', '=', '!', '&', '|', '=', '^', '~'//, ',', '?'
 };
 
 static char preprocessorDirectives[][9] = {
@@ -110,8 +111,7 @@ void handleComments(FILE * file) {
 
 void handleConstants(FILE * file, char c) {
     switch (c) {
-        case '\'':
-            // handle single character
+        case '\'':  // handle single character
             do {
                 token[token_length++] = c;
                 if (c == '\\')
@@ -132,6 +132,24 @@ void handleConstants(FILE * file, char c) {
                 printf("warning: multi-character character constant\n");
                 return;
             }
+
+//            token[token_length++] = c;
+//
+//            c = getc(file);
+//            if (c == '\\') {
+//                token[token_length++] = c;
+//                c = getc(file);
+//            }
+//            token[token_length++] = c;
+//
+//            if ( (c = getc(file)) != '\'' ) {  // handle error
+//                printf("warning: multi-character character constant");
+//                exit(0);
+//            }
+//
+//            token[token_length++] = c;
+//            token[token_length++] = '\0';
+//            token_length = 0;
 
             printf("<char, %s>\n", token);
 
