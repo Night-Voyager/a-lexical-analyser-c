@@ -43,7 +43,7 @@ int main() {
             token_length = 0;
 
             // handle constants
-            if ( (isdigit(c) || c == '\'' || c == '\"') && token_length == 0 ) {
+            if (isdigit(c) || c == '\'' || c == '\"') {
                 handleConstants(file, c);
                 continue;
             }
