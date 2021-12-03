@@ -16,11 +16,16 @@ static char operators[] = {
     '+', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '=', '^', '~'//, ',', '?'
 };
 
+static char preprocessorDirectives[][9] = {
+    "#define", "#undef", "#include", "#ifdef", "#endif", "#ifndef", "#if", "#else", "#elif", "#pragma", "#error"
+};
+
 char token[100] = {'\0'};
 int token_length = 0;
 
 int isKeyword(char *);
 int isOperator(char);
+int isPreprocessorDirective(char *);
 void handleComments(FILE *);
 void handlePunctuations(FILE *, char);
 void handleConstants(FILE *, char);
@@ -76,6 +81,14 @@ int isKeyword(char * s) {
 int isOperator(char c) {
     for (int i = 0; i < 16; ++i) {
         if (c == operators[i]) return 1;
+    }
+    return 0;
+}
+
+
+int isPreprocessorDirective(char * s) {
+    for (int i = 0; i < 11; ++i) {
+        if (strcmp(s, preprocessorDirectives[i]) == 0) return 1;
     }
     return 0;
 }
@@ -177,11 +190,35 @@ void handlePunctuations(FILE * file, char c){
                     return;
                 }
             }
+            default:
+                printf("<op, %c>\n", c);
         }
-        printf("<op, %c>\n", c);
     }
-    else
-        printf("<special symbol, %c>\n", c);
+    else {
+        switch (c) {
+            case '#':
+            {
+                do {
+                    token[token_length++] = c;
+                } while (isalpha(c = getc(file)) && token_length < IDENTIFIER_MAX_LEN);
+
+                if (token_length == IDENTIFIER_MAX_LEN) token_length--;
+                token[token_length] = '\0';
+                token_length = 0;
+
+                if (isPreprocessorDirective(token)) {
+                    printf("<preprocessor directive, %s>\n", token);
+                    return;
+                }
+                else {
+                    printf("error: invalid preprocessing directive %s\n", token);
+                    exit(0);
+                }
+            }
+            default:
+                printf("<special symbol, %c>\n", c);
+        }
+    }
 
     token_length = 0;
 }
