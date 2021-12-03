@@ -109,8 +109,7 @@ void handleComments(FILE * file) {
 
 void handleConstants(FILE * file, char c) {
     switch (c) {
-        case '\'':
-            // handle single character
+        case '\'':  // handle single character
             do {
                 token[token_length++] = c;
                 if (c == '\\')
@@ -135,8 +134,8 @@ void handleConstants(FILE * file, char c) {
             printf("<char, %s>\n", token);
 
             break;
-        case '\"':
-            // handle string
+
+        case '\"':  // handle string
             do {
                 token[token_length++] = c;
                 if (c == '\\')
@@ -147,7 +146,7 @@ void handleConstants(FILE * file, char c) {
             token[token_length] = '\0';
             token_length = 0;
 
-            if (c == '\r' || c == '\n') {  // handle error
+            if (c == '\r' || c == '\n') {
                 printf("error: missing terminating \" character\n");
                 return;
             }
@@ -155,8 +154,8 @@ void handleConstants(FILE * file, char c) {
             printf("<string, %s>\n", token);
 
             break;
-        default:
-            // handle number
+        default:  // handle numbers, including integers and floats
+                  // TODO: handle octal, hexadecimal, unsigned, and long numbers
             while (isdigit(c)) {
                 token[token_length++] = c;
                 c = getc(file);
@@ -182,8 +181,8 @@ void handleConstants(FILE * file, char c) {
 void handlePunctuations(FILE * file, char c){
     if (isOperator(c)) {
         switch (c) {
-            case '+':
-            case '-':
+            case '+':  // handle positive numbers
+            case '-':  // handle negative numbers
             {
                 char c_next = getc(file);
                 if (isdigit(c_next)) {
@@ -198,7 +197,7 @@ void handlePunctuations(FILE * file, char c){
     }
     else {
         switch (c) {
-            case '#':
+            case '#':  // handle preprocessor directives
                 do {
                     token[token_length++] = c;
                 } while (isalpha(c = getc(file)) && token_length < IDENTIFIER_MAX_LEN);
