@@ -3,18 +3,17 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-#define IDENTIFIER_MAX_LEN 32
+#d IDENTIFIER_MAX_LEN 32
 
 static char keywords[][11] = {
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double", "else", "enum", "extern", "float",
     "for", "goto", "if", "int", "long", "register", "return", "short", "signed", "sizeof", "static", "struct", "switch",
     "typeof", "union", "unsigned", "void", "volatile", "while",  // 32 keywords for ANSI C
-    "_Bool", "_Complex", "_Imaginary", "inline", "restrict"  // 5 new keywords for C99
+    "_Bool", "_Complex", "_Imaginary", "inline", "restrict  // 5 new keywords for C99
 };
 
 static char operators[] = {
-    '+', '-', '*', '/', '%', '<,
-    >', '=', '!', '&', '|', '=', '^', '~'//, ',', '?'
+    '+', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '=', '^', '~'/, ',', '?'
 };
 
 static char preprocessorDirectives[][9] = {
@@ -104,14 +103,14 @@ void handleComments(FILE * file) {
             while ( (c = getc(file)) != '*' || (c = getc(file)) != '/' );
             break;
         default:
-            printf("error: expected expression before '/' token");
-            exit(0);
+            printf("error: expected expression before '%c' token", c);
     }
 }
 
 void handleConstants(FILE * file, char c) {
     switch (c) {
-        case '\'':  // handle single character
+        case '\'':
+            // handle single character
             do {
                 token[token_length++] = c;
                 if (c == '\\')
@@ -133,24 +132,6 @@ void handleConstants(FILE * file, char c) {
                 return;
             }
 
-//            token[token_length++] = c;
-//
-//            c = getc(file);
-//            if (c == '\\') {
-//                token[token_length++] = c;
-//                c = getc(file);
-//            }
-//            token[token_length++] = c;
-//
-//            if ( (c = getc(file)) != '\'' ) {  // handle error
-//                printf("warning: multi-character character constant");
-//                exit(0);
-//            }
-//
-//            token[token_length++] = c;
-//            token[token_length++] = '\0';
-//            token_length = 0;
-
             printf("<char, %s>\n", token);
 
             break;
@@ -162,14 +143,14 @@ void handleConstants(FILE * file, char c) {
                     token[token_length++] = getc(file);
             } while ( (c = getc(file)) != '\"' && c != '\r' && c != '\n');
 
-            if (c == '\r' || c == '\n') {  // handle error
-                printf("error: missing terminating \" character");
-                exit(0);
-            }
-
             token[token_length++] = c;
             token[token_length] = '\0';
             token_length = 0;
+
+            if (c == '\r' || c == '\n') {  // handle error
+                printf("error: missing terminating \" character");
+                return;
+            }
 
             printf("<string, %s>\n", token);
 
@@ -218,7 +199,6 @@ void handlePunctuations(FILE * file, char c){
     else {
         switch (c) {
             case '#':
-            {
                 do {
                     token[token_length++] = c;
                 } while (isalpha(c = getc(file)) && token_length < IDENTIFIER_MAX_LEN);
@@ -227,15 +207,12 @@ void handlePunctuations(FILE * file, char c){
                 token[token_length] = '\0';
                 token_length = 0;
 
-                if (isPreprocessorDirective(token)) {
+                if (isPreprocessorDirective(token))
                     printf("<preprocessor directive, %s>\n", token);
-                    return;
-                }
-                else {
+                else
                     printf("error: invalid preprocessing directive %s\n", token);
-                    exit(0);
-                }
-            }
+
+                break;
             default:
                 printf("<special symbol, %c>\n", c);
         }

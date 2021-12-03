@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdlib.h>
 
 #define IDENTIFIER_MAX_LEN 32
 
@@ -38,7 +37,7 @@ int main() {
     while ( (c = getc(file)) != EOF ) {
         if (!isspace(c)) {
             // handle comments
-            if (c == '/' && token_length == 0) {
+            if (c == '/') {
                 handleComments(file);
                 continue;
             }
@@ -103,8 +102,8 @@ void handleComments(FILE * file) {
             while ( (c = getc(file)) != '*' || (c = getc(file)) != '/' );
             break;
         default:
-            printf("error: expected expression before '/' token");
-            exit(0);
+            // TODO: handle sign of division
+            printf("error: expected expression before '%c' token\n", c);
     }
 }
 
@@ -144,14 +143,14 @@ void handleConstants(FILE * file, char c) {
                     token[token_length++] = getc(file);
             } while ( (c = getc(file)) != '\"' && c != '\r' && c != '\n');
 
-            if (c == '\r' || c == '\n') {  // handle error
-                printf("error: missing terminating \" character");
-                exit(0);
-            }
-
             token[token_length++] = c;
             token[token_length] = '\0';
             token_length = 0;
+
+            if (c == '\r' || c == '\n') {  // handle error
+                printf("error: missing terminating \" character\n");
+                return;
+            }
 
             printf("<string, %s>\n", token);
 
@@ -200,7 +199,6 @@ void handlePunctuations(FILE * file, char c){
     else {
         switch (c) {
             case '#':
-            {
                 do {
                     token[token_length++] = c;
                 } while (isalpha(c = getc(file)) && token_length < IDENTIFIER_MAX_LEN);
@@ -209,15 +207,12 @@ void handlePunctuations(FILE * file, char c){
                 token[token_length] = '\0';
                 token_length = 0;
 
-                if (isPreprocessorDirective(token)) {
+                if (isPreprocessorDirective(token))
                     printf("<preprocessor directive, %s>\n", token);
-                    return;
-                }
-                else {
+                else
                     printf("error: invalid preprocessing directive %s\n", token);
-                    exit(0);
-                }
-            }
+
+                break;
             default:
                 printf("<special symbol, %c>\n", c);
         }
