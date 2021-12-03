@@ -25,7 +25,7 @@ int token_length = 0;
 int isKeyword(char *);
 int isOperator(char);
 int isPreprocessorDirective(char *);
-void handleComments(FILE *);
+void handleComments(FILE *, char);
 void handlePunctuations(FILE *, char);
 void handleConstants(FILE *, char);
 void handleKeywordsAndIdentifiers(FILE *, char);
@@ -36,12 +36,6 @@ int main() {
 
     while ( (c = getc(file)) != EOF ) {
         if (!isspace(c)) {
-            // handle comments
-            if (c == '/') {
-                handleComments(file);
-                continue;
-            }
-
             // initialize token buffer
             token[0] = '\0';
             token_length = 0;
@@ -92,8 +86,7 @@ int isPreprocessorDirective(char * s) {
     return 0;
 }
 
-void handleComments(FILE * file) {
-    char c = getc(file);
+void handleComments(FILE * file, char c) {
     switch (c) {
         case '/':
             while ( (c = getc(file)) != '\n' );
@@ -101,9 +94,6 @@ void handleComments(FILE * file) {
         case '*':
             while ( (c = getc(file)) != '*' || (c = getc(file)) != '/' );
             break;
-        default:
-            // TODO: handle sign of division
-            printf("error: expected expression before '%c' token\n", c);
     }
 }
 
@@ -191,10 +181,22 @@ void handlePunctuations(FILE * file, char c){
                     return;
                 } else
                     fseek(file, -1, SEEK_CUR);  // reset the cursor for reading one more character
+
+                break;
             }
-            default:
-                printf("<op, %c>\n", c);
+            case '/':  // handle comments
+            {
+                char c_next = getc(file);
+                if (c_next == '/' || c_next == '*') {
+                    handleComments(file, c_next);
+                    return;
+                } else
+                    fseek(file, -1, SEEK_CUR);  // reset the cursor for reading one more character
+
+                break;
+            }
         }
+        printf("<op, %c>\n", c);
     }
     else {
         switch (c) {
