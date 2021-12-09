@@ -27,6 +27,12 @@ char currentChar;
 char token[100] = {'\0'};
 int token_length = 0;
 
+int row = 1;
+int col = 0;
+int length_of_previous_row;
+int token_start_row;
+int token_start_col;
+
 int isKeyword(char *);
 int isOperator(char);
 int isPreprocessorDirective(char *);
@@ -35,6 +41,8 @@ void handlePunctuations();
 void handleConstants();
 void handleKeywordsAndIdentifiers();
 void printErrorOrWarning(int, char *, ...);
+char getChar();
+void resetCursor();
 
 int main(int argc, char * argv[]) {
     if (argc == 1)
@@ -45,11 +53,15 @@ int main(int argc, char * argv[]) {
     if (file == NULL)
         printErrorOrWarning(1, "file \"%s\" is not found", argv[1]);
 
-    while ( (currentChar = getc(file)) != EOF ) {
+    while ( (currentChar = getChar()) != EOF ) {
         if (!isspace(currentChar)) {
             // initialize token buffer
             token[0] = '\0';
             token_length = 0;
+
+            // save the location in the file where a token starts
+            token_start_row = row;
+            token_start_col = col;
 
             // handle constants
             if (isdigit(currentChar) || currentChar == '\'' || currentChar == '\"') {
@@ -100,10 +112,10 @@ int isPreprocessorDirective(char * s) {
 void handleComments() {
     switch (currentChar) {
         case '/':
-            while ( (currentChar = getc(file)) != '\n' );
+            while ( (currentChar = getChar()) != '\n' );
             break;
         case '*':
-            while ( (currentChar = getc(file)) != '*' || (currentChar = getc(file)) != '/' );
+            while ( (currentChar = getChar()) != '*' || (currentChar = getChar()) != '/' );
             break;
     }
 }
@@ -114,8 +126,8 @@ void handleConstants() {
             do {
                 token[token_length++] = currentChar;
                 if (currentChar == '\\')
-                    token[token_length++] = getc(file);
-            } while ( (currentChar = getc(file)) != '\'' && currentChar != '\r' && currentChar != '\n');
+                    token[token_length++] = getChar();
+            } while ( (currentChar = getChar()) != '\'' && currentChar != '\r' && currentChar != '\n');
 
             token[token_length++] = currentChar;
             token[token_length] = '\0';
@@ -140,8 +152,8 @@ void handleConstants() {
             do {
                 token[token_length++] = currentChar;
                 if (currentChar == '\\')
-                    token[token_length++] = getc(file);
-            } while ( (currentChar = getc(file)) != '\"' && currentChar != '\r' && currentChar != '\n');
+                    token[token_length++] = getChar();
+            } while ( (currentChar = getChar()) != '\"' && currentChar != '\r' && currentChar != '\n');
 
             token[token_length++] = currentChar;
             token[token_length] = '\0';
@@ -159,21 +171,21 @@ void handleConstants() {
                   // TODO: handle octal, hexadecimal, unsigned, and long numbers
             while (isdigit(currentChar)) {
                 token[token_length++] = currentChar;
-                currentChar = getc(file);
+                currentChar = getChar();
             }
 
             if (currentChar == '.') {
                 token[token_length++] = currentChar;
-                currentChar = getc(file);
+                currentChar = getChar();
                 while (isdigit(currentChar)) {
                     token[token_length++] = currentChar;
-                    currentChar = getc(file);
+                    currentChar = getChar();
                 }
             }
 
             token[token_length] = '\0';
             token_length = 0;
-            fseek(file, -1, SEEK_CUR);
+            resetCursor();
 
             printf("<num, %s>\n", token);
     }
@@ -185,24 +197,24 @@ void handlePunctuations(){
             case '+':  // handle positive numbers
             case '-':  // handle negative numbers
             {
-                char nextChar = getc(file);
+                char nextChar = getChar();
                 if (isdigit(nextChar)) {
                     token[token_length++] = currentChar;
                     handleConstants(nextChar);
                     return;
                 } else
-                    fseek(file, -1, SEEK_CUR);  // reset the cursor for reading one more character
+                    resetCursor();  // reset the cursor for reading one more character
 
                 break;
             }
             case '/':  // handle comments
             {
-                char nextChar = getc(file);
+                char nextChar = getChar();
                 if (nextChar == '/' || nextChar == '*') {
                     handleComments(nextChar);
                     return;
                 } else
-                    fseek(file, -1, SEEK_CUR);  // reset the cursor for reading one more character
+                    resetCursor();  // reset the cursor for reading one more character
 
                 break;
             }
@@ -214,7 +226,7 @@ void handlePunctuations(){
             case '#':  // handle preprocessor directives
                 do {
                     token[token_length++] = currentChar;
-                } while (isalpha(currentChar = getc(file)) && token_length < IDENTIFIER_MAX_LEN);
+                } while (isalpha(currentChar = getChar()) && token_length < IDENTIFIER_MAX_LEN);
 
                 if (token_length == IDENTIFIER_MAX_LEN) token_length--;
                 token[token_length] = '\0';
@@ -237,11 +249,11 @@ void handlePunctuations(){
 void handleKeywordsAndIdentifiers() {
     while ( (isalnum(currentChar) || currentChar == '_') && token_length < IDENTIFIER_MAX_LEN ) {
         token[token_length++] = currentChar;
-        currentChar = getc(file);
+        currentChar = getChar();
     }
     token[token_length] = '\0';
     token_length = 0;
-    fseek(file, -1, SEEK_CUR);
+    resetCursor();
     if (isKeyword(token)) {
         if (strcmp(token, "sizeof") == 0)
             printf("<op, sizeof>\n");
@@ -264,10 +276,38 @@ void printErrorOrWarning(int type, char * message, ...) {
             return;
     }
 
+    if (strncmp(message, "file \"", 6) != 0)
+        printf("row %d, column %d: ", token_start_row, token_start_col);
+
     va_list vaList;
     va_start(vaList, message);
     vprintf(message, vaList);
     va_end(vaList);
 
     system("color 7");  // resume the color
+}
+
+char getChar() {
+    if (currentChar == '\n') {
+        row++;
+        length_of_previous_row = col;
+        col = 1;
+    } else {
+        col++;
+    }
+    return getc(file);
+}
+
+void resetCursor() {
+    if (currentChar == '\n')
+        return;
+
+    fseek(file, -1, SEEK_CUR);
+
+    if (col == 1) {
+        row--;
+        col = length_of_previous_row;
+    } else {
+        col--;
+    }
 }
