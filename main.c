@@ -22,6 +22,7 @@ static char preprocessorDirectives[][9] = {
 };
 
 FILE * file;
+char currentChar;
 
 char token[100] = {'\0'};
 int token_length = 0;
@@ -29,10 +30,10 @@ int token_length = 0;
 int isKeyword(char *);
 int isOperator(char);
 int isPreprocessorDirective(char *);
-void handleComments(char);
-void handlePunctuations(char);
-void handleConstants(char);
-void handleKeywordsAndIdentifiers(char);
+void handleComments();
+void handlePunctuations();
+void handleConstants();
+void handleKeywordsAndIdentifiers();
 void printErrorOrWarning(int, char *, ...);
 
 int main(int argc, char * argv[]) {
@@ -44,29 +45,27 @@ int main(int argc, char * argv[]) {
     if (file == NULL)
         printErrorOrWarning(1, "file \"%s\" is not found", argv[1]);
 
-    char c;
-
-    while ( (c = getc(file)) != EOF ) {
-        if (!isspace(c)) {
+    while ( (currentChar = getc(file)) != EOF ) {
+        if (!isspace(currentChar)) {
             // initialize token buffer
             token[0] = '\0';
             token_length = 0;
 
             // handle constants
-            if (isdigit(c) || c == '\'' || c == '\"') {
-                handleConstants(c);
+            if (isdigit(currentChar) || currentChar == '\'' || currentChar == '\"') {
+                handleConstants(currentChar);
                 continue;
             }
 
             // handle keywords and identifiers
-            if (isalpha(c) || c == '_') {
-                handleKeywordsAndIdentifiers(c);
+            if (isalpha(currentChar) || currentChar == '_') {
+                handleKeywordsAndIdentifiers(currentChar);
                 continue;
             }
 
             // handle punctuations
-            if (ispunct(c)) {
-                handlePunctuations(c);
+            if (ispunct(currentChar)) {
+                handlePunctuations(currentChar);
                 continue;
             }
         }
@@ -98,31 +97,31 @@ int isPreprocessorDirective(char * s) {
     return 0;
 }
 
-void handleComments(char c) {
-    switch (c) {
+void handleComments() {
+    switch (currentChar) {
         case '/':
-            while ( (c = getc(file)) != '\n' );
+            while ( (currentChar = getc(file)) != '\n' );
             break;
         case '*':
-            while ( (c = getc(file)) != '*' || (c = getc(file)) != '/' );
+            while ( (currentChar = getc(file)) != '*' || (currentChar = getc(file)) != '/' );
             break;
     }
 }
 
-void handleConstants(char c) {
-    switch (c) {
+void handleConstants() {
+    switch (currentChar) {
         case '\'':  // handle single character
             do {
-                token[token_length++] = c;
-                if (c == '\\')
+                token[token_length++] = currentChar;
+                if (currentChar == '\\')
                     token[token_length++] = getc(file);
-            } while ( (c = getc(file)) != '\'' && c != '\r' && c != '\n');
+            } while ( (currentChar = getc(file)) != '\'' && currentChar != '\r' && currentChar != '\n');
 
-            token[token_length++] = c;
+            token[token_length++] = currentChar;
             token[token_length] = '\0';
 
             // check for the terminating ' character
-            if (c != '\'') {
+            if (currentChar != '\'') {
                 printErrorOrWarning(1, "error: missing terminating ' character\n");
                 return;
             }
@@ -139,16 +138,16 @@ void handleConstants(char c) {
 
         case '\"':  // handle string
             do {
-                token[token_length++] = c;
-                if (c == '\\')
+                token[token_length++] = currentChar;
+                if (currentChar == '\\')
                     token[token_length++] = getc(file);
-            } while ( (c = getc(file)) != '\"' && c != '\r' && c != '\n');
+            } while ( (currentChar = getc(file)) != '\"' && currentChar != '\r' && currentChar != '\n');
 
-            token[token_length++] = c;
+            token[token_length++] = currentChar;
             token[token_length] = '\0';
             token_length = 0;
 
-            if (c == '\r' || c == '\n') {
+            if (currentChar == '\r' || currentChar == '\n') {
                 printErrorOrWarning(1, "error: missing terminating \" character\n");
                 return;
             }
@@ -158,17 +157,17 @@ void handleConstants(char c) {
             break;
         default:  // handle numbers, including integers and floats
                   // TODO: handle octal, hexadecimal, unsigned, and long numbers
-            while (isdigit(c)) {
-                token[token_length++] = c;
-                c = getc(file);
+            while (isdigit(currentChar)) {
+                token[token_length++] = currentChar;
+                currentChar = getc(file);
             }
 
-            if (c == '.') {
-                token[token_length++] = c;
-                c = getc(file);
-                while (isdigit(c)) {
-                    token[token_length++] = c;
-                    c = getc(file);
+            if (currentChar == '.') {
+                token[token_length++] = currentChar;
+                currentChar = getc(file);
+                while (isdigit(currentChar)) {
+                    token[token_length++] = currentChar;
+                    currentChar = getc(file);
                 }
             }
 
@@ -180,15 +179,15 @@ void handleConstants(char c) {
     }
 }
 
-void handlePunctuations(char c){
-    if (isOperator(c)) {
-        switch (c) {
+void handlePunctuations(){
+    if (isOperator(currentChar)) {
+        switch (currentChar) {
             case '+':  // handle positive numbers
             case '-':  // handle negative numbers
             {
                 char c_next = getc(file);
                 if (isdigit(c_next)) {
-                    token[token_length++] = c;
+                    token[token_length++] = currentChar;
                     handleConstants(c_next);
                     return;
                 } else
@@ -208,14 +207,14 @@ void handlePunctuations(char c){
                 break;
             }
         }
-        printf("<op, %c>\n", c);
+        printf("<op, %c>\n", currentChar);
     }
     else {
-        switch (c) {
+        switch (currentChar) {
             case '#':  // handle preprocessor directives
                 do {
-                    token[token_length++] = c;
-                } while (isalpha(c = getc(file)) && token_length < IDENTIFIER_MAX_LEN);
+                    token[token_length++] = currentChar;
+                } while (isalpha(currentChar = getc(file)) && token_length < IDENTIFIER_MAX_LEN);
 
                 if (token_length == IDENTIFIER_MAX_LEN) token_length--;
                 token[token_length] = '\0';
@@ -228,17 +227,17 @@ void handlePunctuations(char c){
 
                 break;
             default:
-                printf("<special symbol, %c>\n", c);
+                printf("<special symbol, %c>\n", currentChar);
         }
     }
 
     token_length = 0;
 }
 
-void handleKeywordsAndIdentifiers(char c) {
-    while ( (isalnum(c) || c == '_') && token_length < IDENTIFIER_MAX_LEN ) {
-        token[token_length++] = c;
-        c = getc(file);
+void handleKeywordsAndIdentifiers() {
+    while ( (isalnum(currentChar) || currentChar == '_') && token_length < IDENTIFIER_MAX_LEN ) {
+        token[token_length++] = currentChar;
+        currentChar = getc(file);
     }
     token[token_length] = '\0';
     token_length = 0;
