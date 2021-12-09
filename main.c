@@ -185,10 +185,10 @@ void handlePunctuations(){
             case '+':  // handle positive numbers
             case '-':  // handle negative numbers
             {
-                char c_next = getc(file);
-                if (isdigit(c_next)) {
+                char nextChar = getc(file);
+                if (isdigit(nextChar)) {
                     token[token_length++] = currentChar;
-                    handleConstants(c_next);
+                    handleConstants(nextChar);
                     return;
                 } else
                     fseek(file, -1, SEEK_CUR);  // reset the cursor for reading one more character
@@ -197,9 +197,9 @@ void handlePunctuations(){
             }
             case '/':  // handle comments
             {
-                char c_next = getc(file);
-                if (c_next == '/' || c_next == '*') {
-                    handleComments(c_next);
+                char nextChar = getc(file);
+                if (nextChar == '/' || nextChar == '*') {
+                    handleComments(nextChar);
                     return;
                 } else
                     fseek(file, -1, SEEK_CUR);  // reset the cursor for reading one more character
