@@ -21,20 +21,21 @@ static char preprocessorDirectives[][9] = {
     "#define", "#undef", "#include", "#ifdef", "#endif", "#ifndef", "#if", "#else", "#elif", "#pragma", "#error"
 };
 
+FILE * file;
+
 char token[100] = {'\0'};
 int token_length = 0;
 
 int isKeyword(char *);
 int isOperator(char);
 int isPreprocessorDirective(char *);
-void handleComments(FILE *, char);
-void handlePunctuations(FILE *, char);
-void handleConstants(FILE *, char);
-void handleKeywordsAndIdentifiers(FILE *, char);
+void handleComments(char);
+void handlePunctuations(char);
+void handleConstants(char);
+void handleKeywordsAndIdentifiers(char);
 void printErrorOrWarning(int, char *, ...);
 
 int main(int argc, char * argv[]) {
-    FILE * file;
     if (argc == 1)
         file = fopen("../test.c", "r");
     else
@@ -53,19 +54,19 @@ int main(int argc, char * argv[]) {
 
             // handle constants
             if (isdigit(c) || c == '\'' || c == '\"') {
-                handleConstants(file, c);
+                handleConstants(c);
                 continue;
             }
 
             // handle keywords and identifiers
             if (isalpha(c) || c == '_') {
-                handleKeywordsAndIdentifiers(file, c);
+                handleKeywordsAndIdentifiers(c);
                 continue;
             }
 
             // handle punctuations
             if (ispunct(c)) {
-                handlePunctuations(file, c);
+                handlePunctuations(c);
                 continue;
             }
         }
@@ -97,7 +98,7 @@ int isPreprocessorDirective(char * s) {
     return 0;
 }
 
-void handleComments(FILE * file, char c) {
+void handleComments(char c) {
     switch (c) {
         case '/':
             while ( (c = getc(file)) != '\n' );
@@ -108,7 +109,7 @@ void handleComments(FILE * file, char c) {
     }
 }
 
-void handleConstants(FILE * file, char c) {
+void handleConstants(char c) {
     switch (c) {
         case '\'':  // handle single character
             do {
@@ -179,7 +180,7 @@ void handleConstants(FILE * file, char c) {
     }
 }
 
-void handlePunctuations(FILE * file, char c){
+void handlePunctuations(char c){
     if (isOperator(c)) {
         switch (c) {
             case '+':  // handle positive numbers
@@ -188,7 +189,7 @@ void handlePunctuations(FILE * file, char c){
                 char c_next = getc(file);
                 if (isdigit(c_next)) {
                     token[token_length++] = c;
-                    handleConstants(file, c_next);
+                    handleConstants(c_next);
                     return;
                 } else
                     fseek(file, -1, SEEK_CUR);  // reset the cursor for reading one more character
@@ -199,7 +200,7 @@ void handlePunctuations(FILE * file, char c){
             {
                 char c_next = getc(file);
                 if (c_next == '/' || c_next == '*') {
-                    handleComments(file, c_next);
+                    handleComments(c_next);
                     return;
                 } else
                     fseek(file, -1, SEEK_CUR);  // reset the cursor for reading one more character
@@ -234,7 +235,7 @@ void handlePunctuations(FILE * file, char c){
     token_length = 0;
 }
 
-void handleKeywordsAndIdentifiers(FILE * file, char c) {
+void handleKeywordsAndIdentifiers(char c) {
     while ( (isalnum(c) || c == '_') && token_length < IDENTIFIER_MAX_LEN ) {
         token[token_length++] = c;
         c = getc(file);
