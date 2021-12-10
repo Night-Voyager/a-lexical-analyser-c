@@ -17,8 +17,8 @@ static char operators[] = {
     '+', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '=', '^', '~'//, ',', '?'
 };
 
-static char preprocessorDirectives[][9] = {
-    "#define", "#undef", "#include", "#ifdef", "#endif", "#ifndef", "#if", "#else", "#elif", "#pragma", "#error"
+static char * preprocessorDirectives[] = {
+    "#define", "#elif", "#else", "#endif", "#error", "#if", "#ifdef", "#ifndef", "#include", "#pragma", "#undef"
 };
 
 FILE * file;
@@ -33,6 +33,7 @@ int length_of_previous_row;
 int token_start_row;
 int token_start_col;
 
+int binarySearch(char * [], int, char *);
 int isKeyword(char *);
 int isOperator(char);
 int isPreprocessorDirective(char *);
@@ -87,6 +88,24 @@ int main(int argc, char * argv[]) {
     return 0;
 }
 
+int binarySearch(char * stringArray[], int arrayLength, char * string) {
+    int lo = 0;
+    int hi = arrayLength - 1;
+    int mid;
+    while (lo <= hi) {
+        mid = (lo + hi) / 2;
+        int cmp = strcmp(stringArray[mid], string);
+        if (cmp < 0)
+            lo = mid + 1;
+        else if (cmp > 0)
+            hi = mid - 1;
+        else
+            return -1;  // -1 for found
+    }
+    if (strcmp(stringArray[mid], string) < 0 && mid < arrayLength-1) mid++;
+    return mid;  // index of the most similar string
+}
+
 int isKeyword(char * s) {
     for (int i = 0; i < 37; ++i) {
         if (strcmp(s, keywords[i]) == 0) return 1;
@@ -103,10 +122,7 @@ int isOperator(char c) {
 
 
 int isPreprocessorDirective(char * s) {
-    for (int i = 0; i < 11; ++i) {
-        if (strcmp(s, preprocessorDirectives[i]) == 0) return 1;
-    }
-    return 0;
+    return binarySearch(preprocessorDirectives, 11, s);
 }
 
 void handleComments() {
@@ -232,10 +248,11 @@ void handlePunctuations(){
                 token[token_length] = '\0';
                 token_length = 0;
 
-                if (isPreprocessorDirective(token))
+                int i = isPreprocessorDirective(token);
+                if (i == -1)  // -1 for found
                     printf("<preprocessor directive, %s>\n", token);
                 else
-                    printErrorOrWarning(1, "error: invalid preprocessing directive %s\n", token);
+                    printErrorOrWarning(1, "error: invalid preprocessing directive %s, did you mean: %s\n", token, preprocessorDirectives[i]);
 
                 break;
             default:
