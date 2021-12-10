@@ -131,7 +131,11 @@ void handleComments() {
             while ( (currentChar = getChar()) != '\n' );
             break;
         case '*':
-            while ( (currentChar = getChar()) != '*' || (currentChar = getChar()) != '/' );
+            while ( (currentChar = getChar()) != '*' || (currentChar = getChar()) != '/' )
+                if (currentChar == EOF) {
+                    printErrorOrWarning(1, "error: unterminated comment\n");
+                    return;
+                }
             break;
     }
 }
@@ -227,7 +231,8 @@ void handlePunctuations(){
             {
                 char nextChar = getChar();
                 if (nextChar == '/' || nextChar == '*') {
-                    handleComments(nextChar);
+                    currentChar = nextChar;
+                    handleComments();
                     return;
                 } else
                     resetCursor();  // reset the cursor for reading one more character
