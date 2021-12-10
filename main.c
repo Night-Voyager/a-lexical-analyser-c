@@ -5,6 +5,7 @@
 #include <stdarg.h>
 
 #define IDENTIFIER_MAX_LEN 32
+#define DEBUG_MODE 1  // turn on debug mode to view debug messages
 
 static char keywords[][11] = {
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double", "else", "enum", "extern", "float",
@@ -34,7 +35,7 @@ int token_start_row;
 int token_start_col;
 
 enum LOG_TYPE {
-    INFO, WARNING, ERROR
+    DEBUG, WARNING, ERROR
 };
 
 int binarySearch(char * [], int, char *);
@@ -132,9 +133,11 @@ int isPreprocessorDirective(char * s) {
 void handleComments() {
     switch (currentChar) {
         case '/':
+            printLog(DEBUG, "single line comment starts\n");
             while ( (currentChar = getChar()) != '\n' );
             break;
         case '*':
+            printLog(DEBUG, "multi-line comment starts\n");
             while ( (currentChar = getChar()) != '*' || (currentChar = getChar()) != '/' )
                 if (currentChar == EOF) {
                     printLog(ERROR, "error: unterminated comment\n");
@@ -292,6 +295,10 @@ void handleKeywordsAndIdentifiers() {
 
 void printLog(enum LOG_TYPE type, char * message, ...) {
     switch (type) {
+        case DEBUG:
+            if (!DEBUG_MODE) return;
+            system("color 1");
+            break;
         case WARNING:  // yellow for warning
             system("color 6");
             break;
