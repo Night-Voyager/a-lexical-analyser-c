@@ -7,7 +7,7 @@
 #define IDENTIFIER_MAX_LEN 32
 #define DEBUG_MODE 1  // turn on debug mode to view debug messages
 
-static char * keywords[] = {  // 44 keywords in total
+static const char * keywords[] = {  // 44 keywords in total
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double", "else", "enum", "extern", "float",
     "for", "goto", "if", "int", "long", "register", "return", "short", "signed", "sizeof", "static", "struct", "switch",
     "typeof", "union", "unsigned", "void", "volatile", "while",  // 32 keywords for ANSI C
@@ -15,11 +15,11 @@ static char * keywords[] = {  // 44 keywords in total
     "_Alignas", "_Alignof", "_Atomic", "_Generic", "_Noreturn", "_Static_assert", "_Thread_local"  // 7 new keywords for C11
 };
 
-static char operators[] = {
+static const char operators[] = {
     '+', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '=', '^', '~'//, ',', '?'
 };
 
-static char * preprocessorDirectives[] = {
+static const char * preprocessorDirectives[] = {
     "#define", "#elif", "#else", "#endif", "#error", "#if", "#ifdef", "#ifndef", "#include", "#pragma", "#undef"
 };
 
