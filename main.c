@@ -33,6 +33,10 @@ int length_of_previous_row;
 int token_start_row;
 int token_start_col;
 
+enum LOG_TYPE {
+    INFO, WARNING, ERROR
+};
+
 int binarySearch(char * [], int, char *);
 int isKeyword(char *);
 int isOperator(char);
@@ -41,7 +45,7 @@ void handleComments();
 void handlePunctuations();
 void handleConstants();
 void handleKeywordsAndIdentifiers();
-void printErrorOrWarning(int, char *, ...);
+void printLog(enum LOG_TYPE, char *, ...);
 char getChar();
 void resetCursor();
 
@@ -52,7 +56,7 @@ int main(int argc, char * argv[]) {
         file = fopen(argv[1], "r");
 
     if (file == NULL)
-        printErrorOrWarning(1, "file \"%s\" is not found", argv[1]);
+        printLog(ERROR, "file \"%s\" is not found", argv[1]);
 
     while ( (currentChar = getChar()) != EOF ) {
         if (!isspace(currentChar)) {
@@ -133,7 +137,7 @@ void handleComments() {
         case '*':
             while ( (currentChar = getChar()) != '*' || (currentChar = getChar()) != '/' )
                 if (currentChar == EOF) {
-                    printErrorOrWarning(1, "error: unterminated comment\n");
+                    printLog(ERROR, "error: unterminated comment\n");
                     return;
                 }
             break;
@@ -154,13 +158,13 @@ void handleConstants() {
 
             // check for the terminating ' character
             if (currentChar != '\'') {
-                printErrorOrWarning(1, "error: missing terminating ' character\n");
+                printLog(ERROR, "error: missing terminating ' character\n");
                 return;
             }
 
             // check for the length of the token
             if ( (token[1] == '\\' && token_length > 4) || (token[1] != '\\' && token_length > 3) ) {
-                printErrorOrWarning(0, "warning: multi-character character constant\n");
+                printLog(WARNING, "warning: multi-character character constant\n");
                 return;
             }
 
@@ -180,7 +184,7 @@ void handleConstants() {
             token_length = 0;
 
             if (currentChar == '\r' || currentChar == '\n') {
-                printErrorOrWarning(1, "error: missing terminating \" character\n");
+                printLog(ERROR, "error: missing terminating \" character\n");
                 return;
             }
 
@@ -257,7 +261,7 @@ void handlePunctuations(){
                 if (i == -1)  // -1 for found
                     printf("<preprocessor directive, %s>\n", token);
                 else
-                    printErrorOrWarning(1, "error: invalid preprocessing directive %s, did you mean: %s\n", token, preprocessorDirectives[i]);
+                    printLog(ERROR, "error: invalid preprocessing directive %s, did you mean: %s\n", token, preprocessorDirectives[i]);
 
                 break;
             default:
@@ -286,12 +290,12 @@ void handleKeywordsAndIdentifiers() {
         printf("<id, %s>\n", token);
 }
 
-void printErrorOrWarning(int type, char * message, ...) {
+void printLog(enum LOG_TYPE type, char * message, ...) {
     switch (type) {
-        case 0:  // yellow for warning
+        case WARNING:  // yellow for warning
             system("color 6");
             break;
-        case 1:  // red for error
+        case ERROR:  // red for error
             system("color 4");
             break;
         default:
