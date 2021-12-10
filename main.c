@@ -16,7 +16,7 @@ static const char * keywords[] = {  // 44 keywords in total
 };
 
 static const char operators[] = {
-    '+', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '=', '^', '~'//, ',', '?'
+    '+', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '^', '~', '?'
 };
 
 static const char * preprocessorDirectives[] = {
