@@ -71,19 +71,19 @@ int main(int argc, char * argv[]) {
 
             // handle constants
             if (isdigit(currentChar) || currentChar == '\'' || currentChar == '\"') {
-                handleConstants(currentChar);
+                handleConstants();
                 continue;
             }
 
             // handle keywords and identifiers
             if (isalpha(currentChar) || currentChar == '_') {
-                handleKeywordsAndIdentifiers(currentChar);
+                handleKeywordsAndIdentifiers();
                 continue;
             }
 
             // handle punctuations
             if (ispunct(currentChar)) {
-                handlePunctuations(currentChar);
+                handlePunctuations();
                 continue;
             }
         }
@@ -194,6 +194,7 @@ void handleConstants() {
             printf("<string, %s>\n", token);
 
             break;
+
         default:  // handle numbers, including integers and floats
                   // TODO: handle octal, hexadecimal, unsigned, and long numbers
             while (isdigit(currentChar)) {
@@ -227,7 +228,8 @@ void handlePunctuations(){
                 char nextChar = getChar();
                 if (isdigit(nextChar)) {
                     token[token_length++] = currentChar;
-                    handleConstants(nextChar);
+                    currentChar = nextChar;
+                    handleConstants();
                     return;
                 } else
                     resetCursor();  // reset the cursor for reading one more character

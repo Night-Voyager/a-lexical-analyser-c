@@ -6,17 +6,18 @@
  * test
  */
 #d IDENTIFIER_MAX_LEN 32
-#define IDENTIFIER_MIN_LEN 1
+#define IDENTIFIER_MIN_LEN -1
+#define TEST_NUM -2.
 
 static char keywords[][11] = {
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double", "else", "enum", "extern", "float
     "for", "goto", "if", "int", "long", "register", "return", "short", "signed", "sizeof", "static", "struct", "switch",
-    "typeof", "union", "unsigned", "void", "volatile", "while",  // 32 keywords for ANSI C
+    "typeof", "union", "unsigned", "void", "volatile", "while",  / 32 keywords for ANSI C
     "_Bool", "_Complex", "_Imaginary", "inline", "restrict  // 5 new keywords for C99
 };
 
 static char operators[] = {
-    '+ ', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '=', '^', '~'/, ',', '?'
+    '+ ', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '=', '^', '~'//, ',', '?'
 };
 
 static char preprocessorDirectives[][9] = {
