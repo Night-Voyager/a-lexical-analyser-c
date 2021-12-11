@@ -251,6 +251,10 @@ void handlePunctuations(){
             case '&':
             case '^':
             case '|':
+            case '>':
+            case '<':
+            case '!':
+            case '=':
             {
                 char nextChar = getChar();
 
