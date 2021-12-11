@@ -223,34 +223,39 @@ void handleConstants() {
 void handlePunctuations(){
     if (isOperator(currentChar)) {
         switch (currentChar) {
-            case '+':  // handle positive numbers
-            case '-':  // handle negative numbers
+            case '+':
+            case '-':
+            case '*':
+            case '/':
+            case '%':
+            case '&':
+            case '^':
+            case '|':
             {
                 char nextChar = getChar();
-                if (isdigit(nextChar)) {
-                    token[token_length++] = currentChar;
-                    currentChar = nextChar;
-                    handleConstants();
-                    return;
-                } else
-                    resetCursor();  // reset the cursor for reading one more character
 
-                break;
-            }
-            case '/':  // handle comments
-            {
-                char nextChar = getChar();
-                if (nextChar == '/' || nextChar == '*') {
+                if (nextChar == '=') {  // handle assignment operators
+                    token[token_length++] = currentChar;
+                    token[token_length++] = nextChar;
+                    token[token_length] = '\0';
+                    break;
+                }
+
+                if (currentChar == '/' && (nextChar == '/' || nextChar == '*')) {  // handle comments
                     currentChar = nextChar;
                     handleComments();
                     return;
-                } else
-                    resetCursor();  // reset the cursor for reading one more character
+                }
+
+                resetCursor();  // reset the cursor for reading one more character
 
                 break;
             }
         }
-        printf("<op, %c>\n", currentChar);
+        if (token_length)
+            printf("<op, %s>\n", token);
+        else
+            printf("<op, %c>\n", currentChar);
     }
     else {
         switch (currentChar) {
