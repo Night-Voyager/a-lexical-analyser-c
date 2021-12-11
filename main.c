@@ -274,22 +274,22 @@ void handlePunctuations(){
             case '>':
             {
                 char nextChar = getChar();
-                if (nextChar == '>') {  // handle shift right operator
+                if (nextChar == '>') {  // handle shift right operator, and prepare for handling shift left and assignment operator
                     token[token_length++] = currentChar;
-                    token[token_length++] = nextChar;
-                    token[token_length] = '\0';
-                    break;
+                    token[token_length] = nextChar;
+                    token[token_length+1] = '\0';
+                    currentChar = nextChar;
                 } else
                     resetCursor();  // reset the cursor for reading one more character
             }
             case '<':
             {
                 char nextChar = getChar();
-                if (nextChar == '<') {  // handle shift left operator
+                if (nextChar == '<') {  // handle shift right operator, and prepare for handling shift left and assignment operator
                     token[token_length++] = currentChar;
-                    token[token_length++] = nextChar;
-                    token[token_length] = '\0';
-                    break;
+                    token[token_length] = nextChar;
+                    token[token_length+1] = '\0';
+                    currentChar = nextChar;
                 } else
                     resetCursor();  // reset the cursor for reading one more character
             }
