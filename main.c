@@ -249,8 +249,28 @@ void handlePunctuations(){
             case '/':
             case '%':
             case '&':
-            case '^':
+            {
+                char nextChar = getChar();
+                if (nextChar == '&') {  // handle AND operator
+                    token[token_length++] = currentChar;
+                    token[token_length++] = nextChar;
+                    token[token_length] = '\0';
+                    break;
+                } else
+                    resetCursor();  // reset the cursor for reading one more character
+            }
             case '|':
+            {
+                char nextChar = getChar();
+                if (nextChar == '|') {  // handle OR operator
+                    token[token_length++] = currentChar;
+                    token[token_length++] = nextChar;
+                    token[token_length] = '\0';
+                    break;
+                } else
+                    resetCursor();  // reset the cursor for reading one more character
+            }
+            case '^':
             case '>':
             case '<':
             case '!':
