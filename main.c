@@ -53,7 +53,7 @@ void resetCursor();
 
 int main(int argc, char * argv[]) {
     if (argc == 1)
-        file = fopen("../test.c", "r");
+        file = fopen("../test_operators.c", "r");
     else
         file = fopen(argv[1], "r");
 
