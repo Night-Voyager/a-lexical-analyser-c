@@ -19,6 +19,10 @@ static char operators[] = {
     '+', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '^', '~', '?'
 };
 
+static char delimiters[] = {
+    ',', ';', ':', '(', ')', '[', ']', '{', '}'
+};
+
 static char * preprocessorDirectives[] = {
     "#define", "#elif", "#else", "#endif", "#error", "#if", "#ifdef", "#ifndef", "#include", "#pragma", "#undef"
 };
@@ -42,6 +46,7 @@ enum LOG_TYPE {
 int binarySearch(char * [], int, char *);
 int isKeyword(char *);
 int isOperator(char);
+int isDelimiter(char);
 int isPreprocessorDirective(char *);
 void handleComments();
 void handlePunctuations();
@@ -53,7 +58,7 @@ void resetCursor();
 
 int main(int argc, char * argv[]) {
     if (argc == 1)
-        file = fopen("../test_operators.c", "r");
+        file = fopen("../test.c", "r");
     else
         file = fopen(argv[1], "r");
 
@@ -120,12 +125,18 @@ int isKeyword(char * s) {
 }
 
 int isOperator(char c) {
-    for (int i = 0; i < 16; ++i) {
+    for (int i = 0; i < 14; ++i) {
         if (c == operators[i]) return 1;
     }
     return 0;
 }
 
+int isDelimiter(char c) {
+    for (int i = 0; i < 9; ++i) {
+        if (c == delimiters[i]) return 1;
+    }
+    return 0;
+}
 
 int isPreprocessorDirective(char * s) {
     return binarySearch(preprocessorDirectives, 11, s);
@@ -320,6 +331,9 @@ void handlePunctuations(){
             printf("<op, %s>\n", token);
         else
             printf("<op, %c>\n", currentChar);
+    }
+    else if (isDelimiter(currentChar)) {
+        printf("<delimiter, %c>\n", currentChar);
     }
     else {
         switch (currentChar) {
