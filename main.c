@@ -178,6 +178,10 @@ void handleConstants() {
             }
 
             // check for the length of the token
+            if (token_length == 2) {
+                printLog(ERROR, "error: empty character constant\n");
+                return;
+            }
             if ( (token[1] == '\\' && token_length > 4) || (token[1] != '\\' && token_length > 3) ) {
                 printLog(WARNING, "warning: multi-character character constant\n");
                 return;
