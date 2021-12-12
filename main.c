@@ -51,6 +51,7 @@ int isPreprocessorDirective(char *);
 void handleComments();
 void handlePunctuations();
 void handleConstants();
+void handleNumericConstant();
 void handleKeywordsAndIdentifiers();
 void printLog(enum LOG_TYPE, char *, ...);
 char getChar();
@@ -215,121 +216,122 @@ void handleConstants() {
             break;
 
         default:  // handle numeric constant
-        {
-            int isHexadecimal = 0;  // hexadecimal number begins with 0x and allows [a-fA-F]
-            int isFloatOrScientific = 0;  // float and scientific notation do not allow unsigned numbers
-            int isIllegalScientific = 0;
-
-            if (currentChar == '0') {
-                token[token_length++] = currentChar;
-                currentChar = getChar();
-                if (currentChar == 'x' || currentChar == 'X') {  // handle hexadecimal number
-                    token[token_length++] = currentChar;
-                    currentChar = getChar();
-                    if (  // handle illegal expression
-                            !(
-                                    isdigit(currentChar)
-                                    || (currentChar >= 'a' && currentChar <= 'e')
-                                    || (currentChar >= 'A' && currentChar <= 'E')
-                                    || currentChar == '.'
-                            )
-                    ) {
-                        token[token_length] = '\0';
-                        token_length = 0;
-                        resetCursor();
-                        printLog(FATAL, "unknown token: %s", token);
-                        return;
-                    }
-                    isHexadecimal = 1;
-                }
-            }
-
-            if (isHexadecimal) {
-                while (
-                        isdigit(currentChar)
-                        || (currentChar >= 'a' && currentChar <= 'f')
-                        || (currentChar >= 'A' && currentChar <= 'F')
-                ) {
-                    token[token_length++] = currentChar;
-                    currentChar = getChar();
-                }
-            } else {
-                while (isdigit(currentChar)) {
-                    token[token_length++] = currentChar;
-                    currentChar = getChar();
-                }
-            }
-
-            if (currentChar == '.') {  // handle float
-                token[token_length++] = currentChar;
-                currentChar = getChar();
-                if (isHexadecimal) {
-                    while (
-                            isdigit(currentChar)
-                            || (currentChar >= 'a' && currentChar <= 'f')
-                            || (currentChar >= 'A' && currentChar <= 'F')
-                    ) {
-                        token[token_length++] = currentChar;
-                        currentChar = getChar();
-                    }
-                } else {
-                    while (isdigit(currentChar)) {
-                        token[token_length++] = currentChar;
-                        currentChar = getChar();
-                    }
-                }
-                isFloatOrScientific = 1;
-            }
-
-            if (currentChar == 'e' || currentChar == 'E') {  // handle scientific notation
-                token[token_length++] = currentChar;
-                currentChar = getChar();
-                if (currentChar == '+' || currentChar == '-') {
-                    token[token_length++] = currentChar;
-                    currentChar = getChar();
-                }
-                while (
-                        isdigit(currentChar)
-                        || (currentChar >= 'a' && currentChar <= 'f')
-                        || (currentChar >= 'A' && currentChar <= 'F')
-                ) {
-                    token[token_length++] = currentChar;
-                    currentChar = getChar();
-                    isIllegalScientific = 1;
-                }
-                if (!isIllegalScientific) {  // handle illegal expression
-                    token[token_length] = '\0';
-                    token_length = 0;
-                    resetCursor();
-                    printLog(FATAL, "unknown token: %s", token);
-                    return;
-                }
-                isFloatOrScientific = 1;
-            }
-
-            if (!isFloatOrScientific) {  // handle unsigned number
-                if (currentChar == 'u' || currentChar == 'U') {
-                    token[token_length++] = currentChar;
-                    currentChar = getChar();
-                }
-            }
-
-            if (currentChar == 'l' || currentChar == 'L') {  // handle long number
-                token[token_length++] = currentChar;
-                currentChar = getChar();
-            }
-
-            token[token_length] = '\0';
-            token_length = 0;
-            resetCursor();
-
-            printf("<num, %s>\n", token);
-        }
-
+            handleNumericConstant();
     }
 }
 
-void handlePunctuations(){
+void handleNumericConstant() {
+    int isHexadecimal = 0;  // hexadecimal number begins with 0x and allows [a-fA-F]
+    int isFloatOrScientific = 0;  // float and scientific notation do not allow unsigned numbers
+    int isIllegalScientific = 0;
+
+    if (currentChar == '0') {
+        token[token_length++] = currentChar;
+        currentChar = getChar();
+        if (currentChar == 'x' || currentChar == 'X') {  // handle hexadecimal number
+            token[token_length++] = currentChar;
+            currentChar = getChar();
+            if (  // handle illegal expression
+                    !(
+                            isdigit(currentChar)
+                            || (currentChar >= 'a' && currentChar <= 'e')
+                            || (currentChar >= 'A' && currentChar <= 'E')
+                            || currentChar == '.'
+                    )
+                    ) {
+                token[token_length] = '\0';
+                token_length = 0;
+                resetCursor();
+                printLog(FATAL, "unknown token: %s", token);
+                return;
+            }
+            isHexadecimal = 1;
+        }
+    }
+
+    if (isHexadecimal) {
+        while (
+                isdigit(currentChar)
+                || (currentChar >= 'a' && currentChar <= 'f')
+                || (currentChar >= 'A' && currentChar <= 'F')
+                ) {
+            token[token_length++] = currentChar;
+            currentChar = getChar();
+        }
+    } else {
+        while (isdigit(currentChar)) {
+            token[token_length++] = currentChar;
+            currentChar = getChar();
+        }
+    }
+
+    if (currentChar == '.') {  // handle float
+        token[token_length++] = currentChar;
+        currentChar = getChar();
+        if (isHexadecimal) {
+            while (
+                    isdigit(currentChar)
+                    || (currentChar >= 'a' && currentChar <= 'f')
+                    || (currentChar >= 'A' && currentChar <= 'F')
+                    ) {
+                token[token_length++] = currentChar;
+                currentChar = getChar();
+            }
+        } else {
+            while (isdigit(currentChar)) {
+                token[token_length++] = currentChar;
+                currentChar = getChar();
+            }
+        }
+        isFloatOrScientific = 1;
+    }
+
+    if (currentChar == 'e' || currentChar == 'E') {  // handle scientific notation
+        token[token_length++] = currentChar;
+        currentChar = getChar();
+        if (currentChar == '+' || currentChar == '-') {
+            token[token_length++] = currentChar;
+            currentChar = getChar();
+        }
+        while (
+                isdigit(currentChar)
+                || (currentChar >= 'a' && currentChar <= 'f')
+                || (currentChar >= 'A' && currentChar <= 'F')
+                ) {
+            token[token_length++] = currentChar;
+            currentChar = getChar();
+            isIllegalScientific = 1;
+        }
+        if (!isIllegalScientific) {  // handle illegal expression
+            token[token_length] = '\0';
+            token_length = 0;
+            resetCursor();
+            printLog(FATAL, "unknown token: %s", token);
+            return;
+        }
+        isFloatOrScientific = 1;
+    }
+
+    if (!isFloatOrScientific) {  // handle unsigned number
+        if (currentChar == 'u' || currentChar == 'U') {
+            token[token_length++] = currentChar;
+            currentChar = getChar();
+        }
+    }
+
+    if (currentChar == 'l' || currentChar == 'L') {  // handle long number
+        token[token_length++] = currentChar;
+        currentChar = getChar();
+    }
+
+    token[token_length] = '\0';
+    token_length = 0;
+    resetCursor();
+
+    printf("<num, %s>\n", token);
+}
+
+void handlePunctuations() {
     if (isOperator(currentChar)) {
         switch (currentChar) {
             case '+':
