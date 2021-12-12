@@ -40,7 +40,7 @@ int token_start_row;
 int token_start_col;
 
 enum LOG_TYPE {
-    DEBUG, WARNING, ERROR
+    DEBUG, WARNING, ERROR, FATAL
 };
 
 int binarySearch(char * [], int, char *);
@@ -92,6 +92,9 @@ int main(int argc, char * argv[]) {
                 handlePunctuations();
                 continue;
             }
+
+            // handle unknown tokens
+            printLog(FATAL, "unknown token: %c\n", currentChar);
         }
     }
 
@@ -385,7 +388,7 @@ void handleKeywordsAndIdentifiers() {
 
 void printLog(enum LOG_TYPE type, char * message, ...) {
     switch (type) {
-        case DEBUG:
+        case DEBUG:  // blue for debug
             if (!DEBUG_MODE) return;
             system("color 1");
             break;
@@ -394,6 +397,9 @@ void printLog(enum LOG_TYPE type, char * message, ...) {
             break;
         case ERROR:  // red for error
             system("color 4");
+            break;
+        case FATAL:  // purple for fatal
+            system("color 5");
             break;
         default:
             return;
