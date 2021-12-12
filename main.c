@@ -48,6 +48,7 @@ int isKeyword(char *);
 int isOperator(char);
 int isDelimiter(char);
 int isPreprocessorDirective(char *);
+int isHexDigit(char);
 void handleComments();
 void handlePunctuations();
 void handleConstants();
@@ -146,6 +147,13 @@ int isPreprocessorDirective(char * s) {
     return binarySearch(preprocessorDirectives, 11, s);
 }
 
+int isHexDigit(char c) {
+    return
+        isdigit(currentChar)
+        || (currentChar >= 'a' && currentChar <= 'f')
+        || (currentChar >= 'A' && currentChar <= 'F');
+}
+
 void handleComments() {
     switch (currentChar) {
         case '/':
@@ -231,14 +239,7 @@ void handleNumericConstant() {
         if (currentChar == 'x' || currentChar == 'X') {  // handle hexadecimal number
             token[token_length++] = currentChar;
             currentChar = getChar();
-            if (  // handle illegal expression
-                    !(
-                            isdigit(currentChar)
-                            || (currentChar >= 'a' && currentChar <= 'e')
-                            || (currentChar >= 'A' && currentChar <= 'E')
-                            || currentChar == '.'
-                    )
-                    ) {
+            if ( !(isHexDigit(currentChar) || currentChar == '.') ) {  // handle illegal expression
                 token[token_length] = '\0';
                 token_length = 0;
                 resetCursor();
@@ -250,11 +251,7 @@ void handleNumericConstant() {
     }
 
     if (isHexadecimal) {
-        while (
-                isdigit(currentChar)
-                || (currentChar >= 'a' && currentChar <= 'f')
-                || (currentChar >= 'A' && currentChar <= 'F')
-                ) {
+        while (isHexDigit(currentChar)) {
             token[token_length++] = currentChar;
             currentChar = getChar();
         }
@@ -269,11 +266,7 @@ void handleNumericConstant() {
         token[token_length++] = currentChar;
         currentChar = getChar();
         if (isHexadecimal) {
-            while (
-                    isdigit(currentChar)
-                    || (currentChar >= 'a' && currentChar <= 'f')
-                    || (currentChar >= 'A' && currentChar <= 'F')
-                    ) {
+            while (isHexDigit(currentChar)) {
                 token[token_length++] = currentChar;
                 currentChar = getChar();
             }
@@ -293,11 +286,7 @@ void handleNumericConstant() {
             token[token_length++] = currentChar;
             currentChar = getChar();
         }
-        while (
-                isdigit(currentChar)
-                || (currentChar >= 'a' && currentChar <= 'f')
-                || (currentChar >= 'A' && currentChar <= 'F')
-                ) {
+        while (isHexDigit(currentChar)) {
             token[token_length++] = currentChar;
             currentChar = getChar();
             isIllegalScientific = 1;
