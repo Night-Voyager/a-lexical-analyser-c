@@ -7,7 +7,7 @@
  */
 #d IDENTIFIER_MAX_LEN 32
 #define IDENTIFIER_MIN_LEN -1
-#define TEST_NUM -2.
+#define TEST_NUM -0x2
 啊
 static char keywords[][11] = {
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double", "else", "enum", "extern", "float啊"
