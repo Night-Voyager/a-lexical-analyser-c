@@ -60,7 +60,7 @@ void resetCursor();
 
 int main(int argc, char * argv[]) {
     if (argc == 1)
-        file = fopen("../test_numeric_constants.c", "r");
+        file = fopen("../main.c", "r");
     else
         file = fopen(argv[1], "r");
 
@@ -442,6 +442,18 @@ void handlePunctuations() {
                     printLog(ERROR, "error: invalid preprocessing directive %s, did you mean: %s\n", token, preprocessorDirectives[i]);
 
                 break;
+            case '.':  // handle ellipsis
+            {
+                char nextChar = getChar();
+                char charAfterNextChar = getChar();
+                if (nextChar == '.' && charAfterNextChar == '.') {
+                    printf("<special symbol, ...>\n");
+                    break;
+                } else {
+                    resetCursor();
+                    resetCursor();
+                }
+            }
             default:
                 printf("<special symbol, %c>\n", currentChar);
         }
